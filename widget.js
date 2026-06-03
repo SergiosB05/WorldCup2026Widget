@@ -1,15 +1,15 @@
 // ⚽ World Cup 2026 Widget — Scriptable
 // Άλλαξε ΜΟΝΟ αυτή τη γραμμή:
-const WORKER_URL = "https://wc26-widget.YOUR-USERNAME.workers.dev"; // Πρέπει να το αλλάξει ο χρήστης με το δικό του worker link
+const WORKER_URL = "https://worldcup26.sergiosbexis.workers.dev"; // Πρέπει να το αλλάξει ο χρήστης με το δικό του worker link
 
 // ── Χρώματα & Γραφικά ───────────────────────────────────────
 const C = {
-  gold:    new Color("#f2c94c"),
-  white:   new Color("#ffffff"),
-  gray:    new Color("#8e9eab"),
-  green:   new Color("#00e676"),
-  red:     new Color("#ff3b30"),
-  dim:     new Color("#394a5e"),
+  gold: new Color("#f2c94c"),
+  white: new Color("#ffffff"),
+  gray: new Color("#8e9eab"),
+  green: new Color("#00e676"),
+  red: new Color("#ff3b30"),
+  dim: new Color("#394a5e"),
 };
 
 // ── Helpers ───────────────────────────────────────────────
@@ -19,8 +19,8 @@ function countdown(isoStr) {
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
-  if (d > 0)  return `${d}μ ${h}ω`;
-  if (h > 0)  return `${h}ω ${m}λ`;
+  if (d > 0) return `${d}μ ${h}ω`;
+  if (h > 0) return `${h}ω ${m}λ`;
   return `${m}λ`;
 }
 
@@ -49,7 +49,7 @@ function addMatchRow(widget, match, isHighlight, size) {
   row.layoutHorizontally();
   row.centerAlignContent();
   row.setPadding(4, 4, 4, 4);
-  
+
   // Αν είναι Highlight (Live ή Επόμενο), δώσε λίγο background
   if (isHighlight && match.isLive) {
     row.backgroundColor = new Color("#ffffff", 0.05);
@@ -75,20 +75,20 @@ function addMatchRow(widget, match, isHighlight, size) {
   const centerStack = row.addStack();
   centerStack.layoutVertically();
   centerStack.centerAlignContent();
-  
+
   let centerText;
   if (match.isLive) {
     centerText = centerStack.addText(`${match.score1 ?? 0} - ${match.score2 ?? 0}`);
     centerText.font = Font.heavySystemFont(13);
     centerText.textColor = C.white;
     centerText.centerAlignText();
-    
+
     // Live indicator
     const liveInd = centerStack.addText("🔴 LIVE");
     liveInd.font = Font.boldSystemFont(8);
     liveInd.textColor = C.red;
     liveInd.centerAlignText();
-    
+
   } else if (match.isPast && match.score1 !== null) {
     centerText = centerStack.addText(`${match.score1} - ${match.score2}`);
     centerText.font = Font.boldSystemFont(13);
@@ -121,13 +121,13 @@ function addMatchRow(widget, match, isHighlight, size) {
 // ── Build Widget ──────────────────────────────────────────
 async function buildWidget(size) {
   const w = new ListWidget();
-  
+
   // Όμορφο Premium Gradient Background
   const gradient = new LinearGradient();
   gradient.colors = [new Color("#121f38"), new Color("#080c14")];
   gradient.locations = [0.0, 1.0];
   w.backgroundGradient = gradient;
-  
+
   w.setPadding(14, 16, 14, 16);
   w.url = "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026";
 
@@ -165,7 +165,7 @@ async function buildWidget(size) {
   badgeStack.backgroundColor = new Color("#ffffff", 0.1);
   badgeStack.cornerRadius = 4;
   badgeStack.setPadding(2, 6, 2, 6);
-  
+
   const phaseLabel = badgeStack.addText(`${data.currentPhase} | ${data.totalPlayed}/${data.totalMatches}`);
   phaseLabel.font = Font.boldSystemFont(9);
   phaseLabel.textColor = C.white;
@@ -184,7 +184,7 @@ async function buildWidget(size) {
 
   // ── Σημερινοί / Επόμενοι αγώνες ──────────────────────
   const displayMatches = data.today.length > 0
-    ? data.today.filter(m => !m.isLive) 
+    ? data.today.filter(m => !m.isLive)
     : data.upcoming;
 
   const maxRows = size === "large" ? 6 : (size === "medium" ? (3 - displayedCount) : (1 - displayedCount));
