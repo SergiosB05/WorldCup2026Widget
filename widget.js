@@ -45,6 +45,74 @@ async function fetchData() {
 
 // ── Render match row ──────────────────────────────────────
 function addMatchRow(widget, match, isHighlight, size) {
+  if (size === "small") {
+    // ── ΕΙΔΙΚΟ ΚΑΘΕΤΟ LAYOUT ΓΙΑ ΤΟ SMALL WIDGET ──
+    const mainStack = widget.addStack();
+    mainStack.layoutVertically();
+    if (isHighlight && match.isLive) {
+      mainStack.backgroundColor = new Color("#ffffff", 0.05);
+      mainStack.cornerRadius = 8;
+      mainStack.setPadding(6, 6, 6, 6);
+    }
+
+    // Γραμμή Ομάδας 1
+    const t1Row = mainStack.addStack();
+    t1Row.layoutHorizontally();
+    t1Row.centerAlignContent();
+    t1Row.addText(match.flag1).font = Font.systemFont(18);
+    t1Row.addSpacer(6);
+    const t1 = t1Row.addText(match.team1);
+    t1.font = Font.boldSystemFont(13);
+    t1.textColor = C.white;
+    t1.lineLimit = 1;
+    t1Row.addSpacer();
+    if (match.isLive || match.isPast) {
+      const s1 = t1Row.addText(`${match.score1 ?? 0}`);
+      s1.font = Font.heavySystemFont(15);
+      s1.textColor = match.isLive ? C.white : C.gold;
+    }
+
+    mainStack.addSpacer(4);
+
+    // Γραμμή Ομάδας 2
+    const t2Row = mainStack.addStack();
+    t2Row.layoutHorizontally();
+    t2Row.centerAlignContent();
+    t2Row.addText(match.flag2).font = Font.systemFont(18);
+    t2Row.addSpacer(6);
+    const t2 = t2Row.addText(match.team2);
+    t2.font = Font.boldSystemFont(13);
+    t2.textColor = C.white;
+    t2.lineLimit = 1;
+    t2Row.addSpacer();
+    if (match.isLive || match.isPast) {
+      const s2 = t2Row.addText(`${match.score2 ?? 0}`);
+      s2.font = Font.heavySystemFont(15);
+      s2.textColor = match.isLive ? C.white : C.gold;
+    }
+
+    mainStack.addSpacer(8);
+
+    // Γραμμή Πληροφοριών (Ώρα ή Live)
+    const infoRow = mainStack.addStack();
+    infoRow.layoutHorizontally();
+    if (match.isLive) {
+      const live = infoRow.addText("🔴 LIVE");
+      live.font = Font.boldSystemFont(11);
+      live.textColor = C.red;
+    } else if (match.isPast) {
+      const ft = infoRow.addText("FT");
+      ft.font = Font.boldSystemFont(11);
+      ft.textColor = C.gray;
+    } else {
+      const time = infoRow.addText(`🕒 ${localTime(match.kickoff)}`);
+      time.font = Font.mediumSystemFont(11);
+      time.textColor = C.green;
+    }
+    return; // Τέλος για το small widget
+  }
+
+  // ── ΚΑΝΟΝΙΚΟ LAYOUT ΓΙΑ MEDIUM & LARGE ──
   const row = widget.addStack();
   row.layoutHorizontally();
   row.centerAlignContent();
@@ -148,34 +216,54 @@ async function buildWidget(size) {
 
   // ── HEADER ────────────────────────────────────────────
   const hdr = w.addStack();
-  hdr.layoutHorizontally();
-  hdr.centerAlignContent();
+  if (size === "small") {
+    // Header για Small Widget (πιο συμπαγές)
+    hdr.layoutVertically();
+    
+    const titleStack = hdr.addStack();
+    titleStack.layoutHorizontally();
+    titleStack.centerAlignContent();
+    const trophy = titleStack.addText("🏆 ");
+    trophy.font = Font.systemFont(14);
+    const title = titleStack.addText("WC '26");
+    title.font = Font.heavySystemFont(12);
+    title.textColor = C.gold;
+    
+    hdr.addSpacer(4);
+    const phaseLabel = hdr.addText(data.currentPhase);
+    phaseLabel.font = Font.boldSystemFont(10);
+    phaseLabel.textColor = C.dim;
+  } else {
+    // Header για Medium/Large Widget
+    hdr.layoutHorizontally();
+    hdr.centerAlignContent();
 
-  const trophy = hdr.addText("🏆 ");
-  trophy.font = Font.systemFont(14);
+    const trophy = hdr.addText("🏆 ");
+    trophy.font = Font.systemFont(14);
 
-  const title = hdr.addText("WORLD CUP '26");
-  title.font = Font.heavySystemFont(12);
-  title.textColor = C.gold;
+    const title = hdr.addText("WORLD CUP '26");
+    title.font = Font.heavySystemFont(12);
+    title.textColor = C.gold;
 
-  hdr.addSpacer();
+    hdr.addSpacer();
 
-  // Phase & Progress badge (σε στοίβαγμα για να φαίνεται όμορφο)
-  const badgeStack = hdr.addStack();
-  badgeStack.backgroundColor = new Color("#ffffff", 0.1);
-  badgeStack.cornerRadius = 4;
-  badgeStack.setPadding(2, 6, 2, 6);
+    const badgeStack = hdr.addStack();
+    badgeStack.backgroundColor = new Color("#ffffff", 0.1);
+    badgeStack.cornerRadius = 4;
+    badgeStack.setPadding(2, 6, 2, 6);
 
-  const phaseLabel = badgeStack.addText(`${data.currentPhase} | ${data.totalPlayed}/${data.totalMatches}`);
-  phaseLabel.font = Font.boldSystemFont(9);
-  phaseLabel.textColor = C.white;
+    const phaseLabel = badgeStack.addText(`${data.currentPhase} | ${data.totalPlayed}/${data.totalMatches}`);
+    phaseLabel.font = Font.boldSystemFont(9);
+    phaseLabel.textColor = C.white;
+  }
 
-  w.addSpacer(6);
+  w.addSpacer(8);
 
   // ── LIVE αγώνες ──────────────────────────────────────
   let displayedCount = 0;
   if (data.live && data.live.length > 0) {
-    for (const m of data.live.slice(0, 2)) {
+    const limit = size === "small" ? 1 : 2;
+    for (const m of data.live.slice(0, limit)) {
       addMatchRow(w, m, true, size);
       displayedCount++;
     }
@@ -205,7 +293,7 @@ async function buildWidget(size) {
         subText.font = Font.systemFont(9);
         subText.textColor = C.dim;
       }
-      w.addSpacer(2);
+      if (!isSmall && i < maxRows - 1) w.addSpacer(2);
     }
   }
 
@@ -217,11 +305,11 @@ async function buildWidget(size) {
     if (cd) {
       const footerStack = w.addStack();
       footerStack.layoutHorizontally();
-      footerStack.addSpacer();
-      const footer = footerStack.addText(`Επόμενος: ${cd}`);
+      if (!isSmall) footerStack.addSpacer();
+      const footer = footerStack.addText(isSmall ? `Σε ${cd}` : `Επόμενος: ${cd}`);
       footer.font = Font.italicSystemFont(9);
       footer.textColor = new Color("#ffffff", 0.5);
-      footerStack.addSpacer();
+      if (!isSmall) footerStack.addSpacer();
     }
   }
 
@@ -229,14 +317,14 @@ async function buildWidget(size) {
 }
 
 // ── Entry Point ───────────────────────────────────────────
-const size = config.widgetFamily || "medium";
-const widget = await buildWidget(size);
+const realSize = config.widgetFamily || "small"; // For local testing, default to small to check the changes
+const widget = await buildWidget(realSize);
 
 if (config.runInWidget) {
   Script.setWidget(widget);
 } else {
-  if (size === "large") await widget.presentLarge();
-  else if (size === "small") await widget.presentSmall();
+  if (realSize === "large") await widget.presentLarge();
+  else if (realSize === "small") await widget.presentSmall();
   else await widget.presentMedium();
 }
 Script.complete();
